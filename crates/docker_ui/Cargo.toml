@@ -1,5 +1,5 @@
 [package]
-name = "dev_container_ui"
+name = "docker_ui"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later"
 workspace = true
 
 [lib]
-path = "src/dev_container_ui.rs"
+path = "src/docker_ui.rs"
 doctest = false
 
 [dependencies]

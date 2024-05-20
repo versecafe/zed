@@ -3286,25 +3286,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dev_container_ui"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "db",
- "gpui",
- "project",
- "schemars",
- "serde",
- "serde_derive",
- "serde_json",
- "settings",
- "time",
- "ui",
- "util",
- "workspace",
-]
-
-[[package]]
 name = "dev_server_projects"
 version = "0.1.0"
 dependencies = [
@@ -3443,6 +3424,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
  "libloading 0.8.0",
+]
+
+[[package]]
+name = "docker_ui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "db",
+ "gpui",
+ "project",
+ "schemars",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "settings",
+ "time",
+ "ui",
+ "util",
+ "workspace",
 ]
 
 [[package]]
@@ -13124,9 +13124,9 @@ dependencies = [
  "command_palette",
  "copilot",
  "db",
- "dev_container_ui",
  "dev_server_projects",
  "diagnostics",
+ "docker_ui",
  "editor",
  "env_logger",
  "extension",

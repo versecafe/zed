@@ -23,9 +23,9 @@ use workspace::{
 };
 
 const TOAST_DURATION: Duration = Duration::from_secs(5);
-const DEV_CONTAINER_PANEL_KEY: &str = "DevContainerPanel";
+const DEV_CONTAINER_PANEL_KEY: &str = "DockerPanel";
 
-pub struct DevContainerPanel {
+pub struct DockerPanel {
     fs: Arc<dyn Fs>,
     width: Option<Pixels>,
     active: bool,
@@ -36,14 +36,14 @@ pub struct DevContainerPanel {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct DevContainerPanelSettings {
+pub struct DockerPanelSettings {
     pub button: bool,
     pub dock: DockPosition,
     pub default_width: Pixels,
 }
 
 #[derive(Serialize, Deserialize)]
-struct SerializedDevContainerPanel {
+struct SerializedDockerPanel {
     width: Option<Pixels>,
 }
 
@@ -70,8 +70,8 @@ pub struct PanelSettingsContent {
     pub default_width: Option<f32>,
 }
 
-impl Settings for DevContainerPanelSettings {
-    const KEY: Option<&'static str> = Some("dev_container_panel");
+impl Settings for DockerPanelSettings {
+    const KEY: Option<&'static str> = Some("docker_panel");
 
     type FileContent = PanelSettingsContent;
 
@@ -83,7 +83,7 @@ impl Settings for DevContainerPanelSettings {
     }
 }
 
-impl DevContainerPanel {
+impl DockerPanel {
     pub fn new(workspace: &mut Workspace, cx: &mut ViewContext<Workspace>) -> View<Self> {
         let fs = workspace.app_state().fs.clone();
         let workspace_handle = workspace.weak_handle();
@@ -119,7 +119,7 @@ impl DevContainerPanel {
                 .log_err()
                 .flatten()
             {
-                Some(serde_json::from_str::<SerializedDevContainerPanel>(&panel)?)
+                Some(serde_json::from_str::<SerializedDockerPanel>(&panel)?)
             } else {
                 None
             };
@@ -144,7 +144,7 @@ impl DevContainerPanel {
                 KEY_VALUE_STORE
                     .write_kvp(
                         DEV_CONTAINER_PANEL_KEY.into(),
-                        serde_json::to_string(&SerializedDevContainerPanel { width })?,
+                        serde_json::to_string(&SerializedDockerPanel { width })?,
                     )
                     .await?;
                 anyhow::Ok(())
@@ -154,7 +154,7 @@ impl DevContainerPanel {
     }
 }
 
-impl Render for DevContainerPanel {
+impl Render for DockerPanel {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         v_flex()
             .size_full()
@@ -167,13 +167,12 @@ impl Render for DevContainerPanel {
                     .h(rems(ui::Tab::CONTAINER_HEIGHT_IN_REMS))
                     .border_b_1()
                     .border_color(cx.theme().colors().border)
-                    .child(Label::new("Dev Containers"))
-                    .child(Icon::new(IconName::Hash)),
+                    .child(Label::new("Docker")),
             )
             .child(
                 v_flex().p_4().child(
                     div().flex().w_full().items_center().child(
-                        Label::new("You have no running containers.")
+                        Label::new("Cannot find running Docker instance.")
                             .color(Color::Muted)
                             .size(LabelSize::Small),
                     ),
@@ -182,13 +181,13 @@ impl Render for DevContainerPanel {
     }
 }
 
-impl Panel for DevContainerPanel {
+impl Panel for DockerPanel {
     fn persistent_name() -> &'static str {
-        "DevContainerPanel"
+        "DockerPanel"
     }
 
     fn position(&self, cx: &WindowContext) -> DockPosition {
-        DevContainerPanelSettings::get_global(cx).dock
+        DockerPanelSettings::get_global(cx).dock
     }
 
     fn position_is_valid(&self, position: DockPosition) -> bool {
@@ -196,7 +195,7 @@ impl Panel for DevContainerPanel {
     }
 
     fn set_position(&mut self, position: DockPosition, cx: &mut ViewContext<Self>) {
-        settings::update_settings_file::<DevContainerPanelSettings>(
+        settings::update_settings_file::<DockerPanelSettings>(
             self.fs.clone(),
             cx,
             move |settings| settings.dock = Some(position),
@@ -205,7 +204,7 @@ impl Panel for DevContainerPanel {
 
     fn size(&self, cx: &WindowContext) -> Pixels {
         self.width
-            .unwrap_or_else(|| DevContainerPanelSettings::get_global(cx).default_width)
+            .unwrap_or_else(|| DockerPanelSettings::get_global(cx).default_width)
     }
 
     fn set_size(&mut self, size: Option<Pixels>, cx: &mut ViewContext<Self>) {
@@ -224,7 +223,7 @@ impl Panel for DevContainerPanel {
     }
 
     fn icon(&self, cx: &WindowContext) -> Option<ui::IconName> {
-        // let show_button = DevContainerPanelSettings::get_global(cx).button;
+        // let show_button = DockerPanelSettings::get_global(cx).button;
         // if !show_button {
         //     return None;
         // }
@@ -248,27 +247,27 @@ impl Panel for DevContainerPanel {
     }
 }
 
-impl FocusableView for DevContainerPanel {
+impl FocusableView for DockerPanel {
     fn focus_handle(&self, _: &AppContext) -> FocusHandle {
         self.focus_handle.clone()
     }
 }
 
-impl EventEmitter<Event> for DevContainerPanel {}
-impl EventEmitter<PanelEvent> for DevContainerPanel {}
+impl EventEmitter<Event> for DockerPanel {}
+impl EventEmitter<PanelEvent> for DockerPanel {}
 
-actions!(dev_container_panel, [ToggleFocus]);
+actions!(docker_panel, [ToggleFocus]);
 
 pub fn init(app_state: &Arc<AppState>, cx: &mut AppContext) {
-    DevContainerPanelSettings::register(cx);
+    DockerPanelSettings::register(cx);
 
     // panel init
     cx.observe_new_views(|workspace: &mut Workspace, _| {
         workspace.register_action(|workspace, _: &ToggleFocus, cx| {
-            workspace.toggle_panel_focus::<DevContainerPanel>(cx);
+            workspace.toggle_panel_focus::<DockerPanel>(cx);
         });
     })
     .detach();
 
-    println!("Initing dev container panel!");
+    println!("Initing docker panel!");
 }

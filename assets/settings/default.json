@@ -278,7 +278,7 @@
     // Default width of the notification panel.
     "default_width": 380
   },
-  "dev_container_panel": {
+  "docker_panel": {
     // Whether to show the dev container panel button in the status bar.
     "button": true,
     // Where to dock the dev container panel. Can be 'left' or 'right'.

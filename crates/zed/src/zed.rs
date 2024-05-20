@@ -194,8 +194,7 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut AppContext) {
                 workspace_handle.clone(),
                 cx.clone(),
             );
-            let dev_container_panel =
-                dev_container_ui::DevContainerPanel::load(workspace_handle.clone(), cx.clone());
+            let docker_panel = docker_ui::DockerPanel::load(workspace_handle.clone(), cx.clone());
 
             let (
                 project_panel,
@@ -204,7 +203,7 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut AppContext) {
                 channels_panel,
                 chat_panel,
                 notification_panel,
-                dev_container_panel,
+                docker_panel,
             ) = futures::try_join!(
                 project_panel,
                 terminal_panel,
@@ -212,7 +211,7 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut AppContext) {
                 channels_panel,
                 chat_panel,
                 notification_panel,
-                dev_container_panel,
+                docker_panel,
             )?;
 
             workspace_handle.update(&mut cx, |workspace, cx| {
@@ -224,7 +223,7 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut AppContext) {
                 workspace.add_panel(channels_panel, cx);
                 workspace.add_panel(chat_panel, cx);
                 workspace.add_panel(notification_panel, cx);
-                workspace.add_panel(dev_container_panel, cx);
+                workspace.add_panel(docker_panel, cx);
                 cx.focus_self();
             })
         })
@@ -427,9 +426,9 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut AppContext) {
             )
             .register_action(
                 |workspace: &mut Workspace,
-                 _: &dev_container_ui::ToggleFocus,
+                 _: &docker_ui::ToggleFocus,
                  cx: &mut ViewContext<Workspace>| {
-                    workspace.toggle_panel_focus::<dev_container_ui::DevContainerPanel>(cx);
+                    workspace.toggle_panel_focus::<docker_ui::DockerPanel>(cx);
                 },
             )
             .register_action(
