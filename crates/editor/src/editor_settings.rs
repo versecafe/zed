@@ -82,11 +82,23 @@ pub struct Scrollbar {
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum NumeralStyle {
+    /// Use Arabic Numerals, for normal people who like their base 10 counting.
+    Arabic,
+    /// Use Roman Numerals, for the strange people who hate based number systems.
+    Roman,
+    /// Use Aegean Numerals, for all the Linear A fans coding since 1500 BCE.
+    Aegean,
+}
+
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 pub struct Gutter {
     pub line_numbers: bool,
     pub code_actions: bool,
     pub runnables: bool,
     pub folds: bool,
+    pub line_numbers_style: NumeralStyle,
 }
 
 /// When to show the scrollbar in the editor.

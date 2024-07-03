@@ -1,4 +1,4 @@
-use crate::editor_settings::ScrollBeyondLastLine;
+use crate::editor_settings::{NumeralStyle, ScrollBeyondLastLine};
 use crate::{
     blame_entry_tooltip::{blame_entry_relative_timestamp, BlameEntryTooltip},
     display_map::{
@@ -1654,6 +1654,48 @@ impl EditorElement {
         }
     }
 
+    fn calculate_roman_numeral(&self, number: &DisplayRowDelta) -> String {
+        let values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+        let symbols = [
+            "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I",
+        ];
+
+        let mut num = *number;
+        let mut roman = String::with_capacity(15);
+        for i in 0..values.len() {
+            while num >= values[i] {
+                num -= values[i];
+                roman.push_str(symbols[i]);
+            }
+        }
+
+        roman
+    }
+
+    fn calculate_aegean_numeral(&self, number: &DisplayRowDelta) -> String {
+        let values = [
+            90000, 80000, 70000, 60000, 50000, 40000, 30000, 20000, 10000, 9000, 8000, 7000, 6000,
+            5000, 4000, 3000, 2000, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 90, 80, 70,
+            60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+        ];
+        let symbols = [
+            "𐄳", "𐄲", "𐄱", "𐄰", "𐄯", "𐄮", "𐄭", "𐄬", "𐄫", "𐄪", "𐄩", "𐄨", "𐄧", "𐄦", "𐄥", "𐄤", "𐄣",
+            "𐄢", "𐄡", "𐄠", "𐄟", "𐄞", "𐄝", "𐄜", "𐄛", "𐄚", "𐄙", "𐄘", "𐄗", "𐄖", "𐄕", "𐄔", "𐄓", "𐄒",
+            "𐄑", "𐄐", "𐄏", "𐄎", "𐄍", "𐄌", "𐄋", "𐄊", "𐄉", "𐄈", "𐄇",
+        ];
+
+        let mut num = *number;
+        let mut aegean = String::with_capacity(5);
+        for i in 0..values.len() {
+            while num >= values[i] {
+                num -= values[i];
+                aegean.push_str(symbols[i]);
+            }
+        }
+
+        aegean
+    }
+
     fn calculate_relative_line_numbers(
         &self,
         snapshot: &EditorSnapshot,
@@ -1742,6 +1784,9 @@ impl EditorElement {
         } else {
             None
         };
+
+        let numeral_style: NumeralStyle = EditorSettings::get_global(cx).gutter.line_numbers_style;
+
         let relative_rows = self.calculate_relative_line_numbers(snapshot, &rows, relative_to);
         let mut line_number = String::new();
         buffer_rows
@@ -1760,7 +1805,12 @@ impl EditorElement {
                 let number = relative_rows
                     .get(&DisplayRow(ix as u32 + rows.start.0))
                     .unwrap_or(&default_number);
-                write!(&mut line_number, "{number}").unwrap();
+                let formatted_number = match numeral_style {
+                    NumeralStyle::Arabic => number.to_string(),
+                    NumeralStyle::Roman => self.calculate_roman_numeral(number),
+                    NumeralStyle::Aegean => self.calculate_aegean_numeral(number),
+                };
+                write!(&mut line_number, "{formatted_number}").unwrap();
                 let run = TextRun {
                     len: line_number.len(),
                     font: self.style.text.font(),
