@@ -297,6 +297,10 @@ pub struct GutterContent {
     ///
     /// Default: true
     pub folds: Option<bool>,
+    /// What style of numerals to use for line numvers
+    ///
+    /// Default: arabic
+    pub line_numbers_style: Option<NumeralStyle>,
 }
 
 impl Settings for EditorSettings {
