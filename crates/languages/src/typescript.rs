@@ -10,7 +10,7 @@ use language::{
     ContextLocation, ContextProvider, File, LanguageToolchainStore, LspAdapter, LspAdapterDelegate,
 };
 use lsp::{CodeActionKind, LanguageServerBinary, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{Fs, lsp_store::language_server_settings};
 use serde_json::{Value, json};
 use smol::{fs, io::BufReader, lock::RwLock, stream::StreamExt};

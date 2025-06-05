@@ -23,7 +23,7 @@ use prompt_store::PromptBuilder;
 use reqwest_client::ReqwestClient;
 
 use assets::Assets;
-use node_runtime::{NodeBinaryOptions, NodeRuntime};
+use js_runtime::{NodeBinaryOptions, NodeRuntime};
 use parking_lot::Mutex;
 use project::project_settings::ProjectSettings;
 use recent_projects::{SshSettings, open_ssh_project};
@@ -437,12 +437,12 @@ Error: Running Zed as root or via sudo is unsupported.
             tx.send(Some(options)).log_err();
         })
         .detach();
-        let node_runtime = NodeRuntime::new(client.http_client(), Some(shell_env_loaded_rx), rx);
+        let js_runtime = NodeRuntime::new(client.http_client(), Some(shell_env_loaded_rx), rx);
 
         debug_adapter_extension::init(extension_host_proxy.clone(), cx);
         language::init(cx);
         language_extension::init(extension_host_proxy.clone(), languages.clone());
-        languages::init(languages.clone(), node_runtime.clone(), cx);
+        languages::init(languages.clone(), js_runtime.clone(), cx);
         let user_store = cx.new(|cx| UserStore::new(client.clone(), cx));
         let workspace_store = cx.new(|cx| WorkspaceStore::new(client.clone(), cx));
 
@@ -485,7 +485,7 @@ Error: Running Zed as root or via sudo is unsupported.
             fs: fs.clone(),
             build_window_options,
             workspace_store,
-            node_runtime: node_runtime.clone(),
+            js_runtime: js_runtime.clone(),
             session: app_session,
         });
         AppState::set_global(Arc::downgrade(&app_state), cx);
@@ -514,7 +514,7 @@ Error: Running Zed as root or via sudo is unsupported.
             copilot_language_server_id,
             app_state.fs.clone(),
             app_state.client.http_client(),
-            app_state.node_runtime.clone(),
+            app_state.js_runtime.clone(),
             cx,
         );
         supermaven::init(app_state.client.clone(), cx);
@@ -548,7 +548,7 @@ Error: Running Zed as root or via sudo is unsupported.
             extension_host_proxy,
             app_state.fs.clone(),
             app_state.client.clone(),
-            app_state.node_runtime.clone(),
+            app_state.js_runtime.clone(),
             cx,
         );
         recent_projects::init(cx);

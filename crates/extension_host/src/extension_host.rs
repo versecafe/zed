@@ -38,7 +38,7 @@ use language::{
     LanguageConfig, LanguageMatcher, LanguageName, LanguageQueries, LoadedLanguage,
     QUERY_FILENAME_PREFIXES, Rope,
 };
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::ContextProviderWithTasks;
 use release_channel::ReleaseChannel;
 use remote::SshRemoteClient;
@@ -183,7 +183,7 @@ pub fn init(
     extension_host_proxy: Arc<ExtensionHostProxy>,
     fs: Arc<dyn Fs>,
     client: Arc<Client>,
-    node_runtime: NodeRuntime,
+    js_runtime: NodeRuntime,
     cx: &mut App,
 ) {
     ExtensionSettings::register(cx);
@@ -197,7 +197,7 @@ pub fn init(
             client.http_client(),
             client.http_client(),
             Some(client.telemetry().clone()),
-            node_runtime,
+            js_runtime,
             cx,
         )
     });
@@ -228,7 +228,7 @@ impl ExtensionStore {
         http_client: Arc<HttpClientWithUrl>,
         builder_client: Arc<dyn HttpClient>,
         telemetry: Option<Arc<Telemetry>>,
-        node_runtime: NodeRuntime,
+        js_runtime: NodeRuntime,
         cx: &mut Context<Self>,
     ) -> Self {
         let work_dir = extensions_dir.join("work");
@@ -250,7 +250,7 @@ impl ExtensionStore {
             wasm_host: WasmHost::new(
                 fs.clone(),
                 http_client.clone(),
-                node_runtime,
+                js_runtime,
                 extension_host_proxy,
                 work_dir,
                 cx,

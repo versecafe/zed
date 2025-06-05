@@ -7,7 +7,7 @@ use fs::Fs;
 use gpui::{App, AppContext as _, AsyncApp, Context, Entity, PromptLevel};
 use http_client::HttpClient;
 use language::{Buffer, BufferEvent, LanguageRegistry, proto::serialize_operation};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{
     LspStore, LspStoreEvent, ManifestTree, PrettierStore, ProjectEnvironment, ProjectPath,
     ToolchainStore, WorktreeId,
@@ -53,7 +53,7 @@ pub struct HeadlessAppState {
     pub session: Arc<ChannelClient>,
     pub fs: Arc<dyn Fs>,
     pub http_client: Arc<dyn HttpClient>,
-    pub node_runtime: NodeRuntime,
+    pub js_runtime: NodeRuntime,
     pub languages: Arc<LanguageRegistry>,
     pub extension_host_proxy: Arc<ExtensionHostProxy>,
 }
@@ -70,7 +70,7 @@ impl HeadlessProject {
             session,
             fs,
             http_client,
-            node_runtime,
+            js_runtime,
             languages,
             extension_host_proxy: proxy,
         }: HeadlessAppState,
@@ -78,7 +78,7 @@ impl HeadlessProject {
     ) -> Self {
         debug_adapter_extension::init(proxy.clone(), cx);
         language_extension::init(proxy.clone(), languages.clone());
-        languages::init(languages.clone(), node_runtime.clone(), cx);
+        languages::init(languages.clone(), js_runtime.clone(), cx);
 
         let worktree_store = cx.new(|cx| {
             let mut store = WorktreeStore::local(true, fs.clone());
@@ -110,7 +110,7 @@ impl HeadlessProject {
         let dap_store = cx.new(|cx| {
             let mut dap_store = DapStore::new_local(
                 http_client.clone(),
-                node_runtime.clone(),
+                js_runtime.clone(),
                 fs.clone(),
                 environment.clone(),
                 toolchain_store.read(cx).as_language_toolchain_store(),
@@ -136,7 +136,7 @@ impl HeadlessProject {
 
         let prettier_store = cx.new(|cx| {
             PrettierStore::new(
-                node_runtime.clone(),
+                js_runtime.clone(),
                 fs.clone(),
                 languages.clone(),
                 worktree_store.clone(),
@@ -201,7 +201,7 @@ impl HeadlessProject {
             http_client.clone(),
             paths::remote_extensions_dir().to_path_buf(),
             proxy,
-            node_runtime,
+            js_runtime,
             cx,
         );
 

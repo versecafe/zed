@@ -83,7 +83,7 @@ use lsp::{
 use lsp_command::*;
 use lsp_store::{CompletionDocumentation, LspFormatTarget, OpenLspBufferHandle};
 pub use manifest_tree::ManifestProviders;
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use parking_lot::Mutex;
 pub use prettier_store::PrettierStore;
 use project_settings::{ProjectSettings, SettingsObserver, SettingsObserverEvent};
@@ -1602,7 +1602,7 @@ impl Project {
             .update(|cx| {
                 Project::local(
                     client,
-                    node_runtime::NodeRuntime::unavailable(),
+                    js_runtime::NodeRuntime::unavailable(),
                     user_store,
                     Arc::new(languages),
                     fs,
@@ -1642,7 +1642,7 @@ impl Project {
         let project = cx.update(|cx| {
             Project::local(
                 client,
-                node_runtime::NodeRuntime::unavailable(),
+                js_runtime::NodeRuntime::unavailable(),
                 user_store,
                 Arc::new(languages),
                 fs,
@@ -1713,7 +1713,7 @@ impl Project {
         self.user_store.clone()
     }
 
-    pub fn node_runtime(&self) -> Option<&NodeRuntime> {
+    pub fn js_runtime(&self) -> Option<&NodeRuntime> {
         self.node.as_ref()
     }
 

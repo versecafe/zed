@@ -1,13 +1,13 @@
 use assets::Assets;
-use gpui::{Application, Entity, KeyBinding, StyleRefinement, WindowOptions, prelude::*, rgb};
-use language::{LanguageRegistry, language_settings::AllLanguageSettings};
+use gpui::{prelude::*, rgb, Application, Entity, KeyBinding, StyleRefinement, WindowOptions};
+use js_runtime::NodeRuntime;
+use language::{language_settings::AllLanguageSettings, LanguageRegistry};
 use markdown::{Markdown, MarkdownElement, MarkdownStyle};
-use node_runtime::NodeRuntime;
 use settings::SettingsStore;
 use std::sync::Arc;
 use theme::LoadThemes;
 use ui::prelude::*;
-use ui::{App, Window, div};
+use ui::{div, App, Window};
 
 const MARKDOWN_EXAMPLE: &str = r#"
 # Markdown Example Document
@@ -44,13 +44,13 @@ pub fn main() {
         });
         cx.bind_keys([KeyBinding::new("cmd-c", markdown::Copy, None)]);
 
-        let node_runtime = NodeRuntime::unavailable();
+        let js_runtime = NodeRuntime::unavailable();
         theme::init(LoadThemes::JustBase, cx);
 
         let language_registry = LanguageRegistry::new(cx.background_executor().clone());
         language_registry.set_theme(cx.theme().clone());
         let language_registry = Arc::new(language_registry);
-        languages::init(language_registry.clone(), node_runtime, cx);
+        languages::init(language_registry.clone(), js_runtime, cx);
         Assets.load_fonts(cx).unwrap();
 
         cx.activate(true);

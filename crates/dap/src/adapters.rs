@@ -9,7 +9,7 @@ use futures::io::BufReader;
 use gpui::{AsyncApp, SharedString};
 pub use http_client::{HttpClient, github::latest_github_release};
 use language::{LanguageName, LanguageToolchainStore};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use serde::{Deserialize, Serialize};
 use settings::WorktreeId;
 use smol::fs::File;
@@ -38,7 +38,7 @@ pub trait DapDelegate: Send + Sync + 'static {
     fn worktree_id(&self) -> WorktreeId;
     fn worktree_root_path(&self) -> &Path;
     fn http_client(&self) -> Arc<dyn HttpClient>;
-    fn node_runtime(&self) -> NodeRuntime;
+    fn js_runtime(&self) -> NodeRuntime;
     fn toolchain_store(&self) -> Arc<dyn LanguageToolchainStore>;
     fn fs(&self) -> Arc<dyn Fs>;
     fn output_to_console(&self, msg: String);

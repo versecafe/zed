@@ -21,7 +21,7 @@ use language::{
     point_from_lsp, point_to_lsp,
 };
 use lsp::{LanguageServer, LanguageServerBinary, LanguageServerId, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use parking_lot::Mutex;
 use request::StatusNotification;
 use settings::SettingsStore;
@@ -57,14 +57,14 @@ pub fn init(
     new_server_id: LanguageServerId,
     fs: Arc<dyn Fs>,
     http: Arc<dyn HttpClient>,
-    node_runtime: NodeRuntime,
+    js_runtime: NodeRuntime,
     cx: &mut App,
 ) {
     copilot_chat::init(fs.clone(), http.clone(), cx);
 
     let copilot = cx.new({
-        let node_runtime = node_runtime.clone();
-        move |cx| Copilot::start(new_server_id, fs, node_runtime, cx)
+        let js_runtime = js_runtime.clone();
+        move |cx| Copilot::start(new_server_id, fs, js_runtime, cx)
     });
     Copilot::set_global(copilot.clone(), cx);
     cx.observe(&copilot, |handle, cx| {
@@ -302,7 +302,7 @@ pub struct Completion {
 
 pub struct Copilot {
     fs: Arc<dyn Fs>,
-    node_runtime: NodeRuntime,
+    js_runtime: NodeRuntime,
     server: CopilotServer,
     buffers: HashSet<WeakEntity<Buffer>>,
     server_id: LanguageServerId,
@@ -334,13 +334,13 @@ impl Copilot {
     fn start(
         new_server_id: LanguageServerId,
         fs: Arc<dyn Fs>,
-        node_runtime: NodeRuntime,
+        js_runtime: NodeRuntime,
         cx: &mut Context<Self>,
     ) -> Self {
         let mut this = Self {
             server_id: new_server_id,
             fs,
-            node_runtime,
+            js_runtime,
             server: CopilotServer::Disabled,
             buffers: Default::default(),
             _subscription: cx.on_app_quit(Self::shutdown_language_server),
@@ -384,14 +384,14 @@ impl Copilot {
         }
         let server_id = self.server_id;
         let fs = self.fs.clone();
-        let node_runtime = self.node_runtime.clone();
+        let js_runtime = self.js_runtime.clone();
         let env = self.build_env(&language_settings.edit_predictions.copilot);
         let start_task = cx
             .spawn(async move |this, cx| {
                 Self::start_language_server(
                     server_id,
                     fs,
-                    node_runtime,
+                    js_runtime,
                     env,
                     this,
                     awaiting_sign_in_after_start,
@@ -432,7 +432,7 @@ impl Copilot {
     pub fn fake(cx: &mut gpui::TestAppContext) -> (Entity<Self>, lsp::FakeLanguageServer) {
         use fs::FakeFs;
         use lsp::FakeLanguageServer;
-        use node_runtime::NodeRuntime;
+        use js_runtime::NodeRuntime;
 
         let (server, fake_server) = FakeLanguageServer::new(
             LanguageServerId(0),
@@ -445,11 +445,11 @@ impl Copilot {
             Default::default(),
             &mut cx.to_async(),
         );
-        let node_runtime = NodeRuntime::unavailable();
+        let js_runtime = NodeRuntime::unavailable();
         let this = cx.new(|cx| Self {
             server_id: LanguageServerId(0),
             fs: FakeFs::new(cx.background_executor().clone()),
-            node_runtime,
+            js_runtime,
             server: CopilotServer::Running(RunningCopilotServer {
                 lsp: Arc::new(server),
                 sign_in_status: SignInStatus::Authorized,
@@ -464,15 +464,15 @@ impl Copilot {
     async fn start_language_server(
         new_server_id: LanguageServerId,
         fs: Arc<dyn Fs>,
-        node_runtime: NodeRuntime,
+        js_runtime: NodeRuntime,
         env: Option<HashMap<String, String>>,
         this: WeakEntity<Self>,
         awaiting_sign_in_after_start: bool,
         cx: &mut AsyncApp,
     ) {
         let start_language_server = async {
-            let server_path = get_copilot_lsp(fs, node_runtime.clone()).await?;
-            let node_path = node_runtime.binary_path().await?;
+            let server_path = get_copilot_lsp(fs, js_runtime.clone()).await?;
+            let node_path = js_runtime.binary_path().await?;
             let arguments: Vec<OsString> = vec![server_path.into(), "--stdio".into()];
             let binary = LanguageServerBinary {
                 path: node_path,
@@ -683,11 +683,11 @@ impl Copilot {
         let start_task = cx
             .spawn({
                 let fs = self.fs.clone();
-                let node_runtime = self.node_runtime.clone();
+                let js_runtime = self.js_runtime.clone();
                 let server_id = self.server_id;
                 async move |this, cx| {
                     clear_copilot_dir().await;
-                    Self::start_language_server(server_id, fs, node_runtime, env, this, false, cx)
+                    Self::start_language_server(server_id, fs, js_runtime, env, this, false, cx)
                         .await
                 }
             })
@@ -1078,19 +1078,19 @@ async fn clear_copilot_config_dir() {
     remove_matching(copilot_chat::copilot_chat_config_dir(), |_| true).await
 }
 
-async fn get_copilot_lsp(fs: Arc<dyn Fs>, node_runtime: NodeRuntime) -> anyhow::Result<PathBuf> {
+async fn get_copilot_lsp(fs: Arc<dyn Fs>, js_runtime: NodeRuntime) -> anyhow::Result<PathBuf> {
     const PACKAGE_NAME: &str = "@github/copilot-language-server";
     const SERVER_PATH: &str =
         "node_modules/@github/copilot-language-server/dist/language-server.js";
 
-    let latest_version = node_runtime
+    let latest_version = js_runtime
         .npm_package_latest_version(PACKAGE_NAME)
         .await?;
     let server_path = paths::copilot_dir().join(SERVER_PATH);
 
     fs.create_dir(paths::copilot_dir()).await?;
 
-    let should_install = node_runtime
+    let should_install = js_runtime
         .should_install_npm_package(
             PACKAGE_NAME,
             &server_path,
@@ -1099,7 +1099,7 @@ async fn get_copilot_lsp(fs: Arc<dyn Fs>, node_runtime: NodeRuntime) -> anyhow::
         )
         .await;
     if should_install {
-        node_runtime
+        js_runtime
             .npm_install_packages(paths::copilot_dir(), &[(PACKAGE_NAME, &latest_version)])
             .await?;
     }

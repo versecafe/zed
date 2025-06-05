@@ -4,7 +4,7 @@ use collections::HashMap;
 use gpui::AsyncApp;
 use language::{LanguageToolchainStore, LspAdapter, LspAdapterDelegate};
 use lsp::{CodeActionKind, LanguageServerBinary, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{Fs, lsp_store::language_server_settings};
 use serde_json::Value;
 use std::{

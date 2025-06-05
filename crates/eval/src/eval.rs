@@ -21,7 +21,7 @@ use gpui::{App, AppContext, Application, AsyncApp, Entity, SemanticVersion, Upda
 use gpui_tokio::Tokio;
 use language::LanguageRegistry;
 use language_model::{ConfiguredModel, LanguageModel, LanguageModelRegistry, SelectedModel};
-use node_runtime::{NodeBinaryOptions, NodeRuntime};
+use js_runtime::{NodeBinaryOptions, NodeRuntime};
 use project::Project;
 use project::project_settings::ProjectSettings;
 use prompt_store::PromptBuilder;
@@ -329,7 +329,7 @@ pub struct AgentAppState {
     pub client: Arc<Client>,
     pub user_store: Entity<UserStore>,
     pub fs: Arc<dyn fs::Fs>,
-    pub node_runtime: NodeRuntime,
+    pub js_runtime: NodeRuntime,
 
     // Additional fields not present in `workspace::AppState`.
     pub prompt_builder: Arc<PromptBuilder>,
@@ -409,7 +409,7 @@ pub fn init(cx: &mut App) -> Arc<AgentAppState> {
         tx.send(Some(options)).log_err();
     })
     .detach();
-    let node_runtime = NodeRuntime::new(client.http_client(), None, rx);
+    let js_runtime = NodeRuntime::new(client.http_client(), None, rx);
 
     let extension_host_proxy = ExtensionHostProxy::global(cx);
 
@@ -418,7 +418,7 @@ pub fn init(cx: &mut App) -> Arc<AgentAppState> {
     language_extension::init(extension_host_proxy.clone(), languages.clone());
     language_model::init(client.clone(), cx);
     language_models::init(user_store.clone(), client.clone(), fs.clone(), cx);
-    languages::init(languages.clone(), node_runtime.clone(), cx);
+    languages::init(languages.clone(), js_runtime.clone(), cx);
     prompt_store::init(cx);
     terminal_view::init(cx);
     let stdout_is_a_pty = false;
@@ -443,7 +443,7 @@ pub fn init(cx: &mut App) -> Arc<AgentAppState> {
         client,
         user_store,
         fs,
-        node_runtime,
+        js_runtime,
         prompt_builder,
     })
 }

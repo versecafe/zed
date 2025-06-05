@@ -1,7 +1,7 @@
 use anyhow::Context as _;
 use gpui::{App, UpdateGlobal};
 use json::json_task_context;
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use python::PyprojectTomlManifestProvider;
 use rust::CargoManifestProvider;
 use rust_embed::RustEmbed;

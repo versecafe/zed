@@ -70,8 +70,8 @@ fn main() {
 
             cx.update(|cx| {
                 let language_registry = project.read(cx).languages().clone();
-                let node_runtime = project.read(cx).node_runtime().unwrap().clone();
-                languages::init(language_registry, node_runtime, cx);
+                let js_runtime = project.read(cx).js_runtime().unwrap().clone();
+                languages::init(language_registry, js_runtime, cx);
             })
             .unwrap();
 

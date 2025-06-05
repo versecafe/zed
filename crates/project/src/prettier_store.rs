@@ -18,7 +18,7 @@ use language::{
     language_settings::{Formatter, LanguageSettings, SelectedFormatter},
 };
 use lsp::{LanguageServer, LanguageServerId, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use paths::default_prettier_dir;
 use prettier::Prettier;
 use smol::stream::StreamExt;

@@ -4,7 +4,7 @@ use futures::StreamExt;
 use gpui::AsyncApp;
 use language::{LanguageToolchainStore, LspAdapter, LspAdapterDelegate};
 use lsp::{LanguageServerBinary, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::Fs;
 use serde_json::json;
 use smol::fs;

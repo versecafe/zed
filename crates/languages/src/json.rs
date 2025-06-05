@@ -9,7 +9,7 @@ use gpui::{App, AsyncApp};
 use http_client::github::{GitHubLspBinaryVersion, latest_github_release};
 use language::{LanguageRegistry, LanguageToolchainStore, LspAdapter, LspAdapterDelegate};
 use lsp::{LanguageServerBinary, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{ContextProviderWithTasks, Fs, lsp_store::language_server_settings};
 use serde_json::{Value, json};
 use settings::{KeymapFile, SettingsJsonSchemaParams, SettingsStore};

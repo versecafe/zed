@@ -96,7 +96,7 @@ members = [
     "crates/migrator",
     "crates/mistral",
     "crates/multi_buffer",
-    "crates/node_runtime",
+    "crates/js_runtime",
     "crates/notifications",
     "crates/ollama",
     "crates/open_ai",
@@ -304,7 +304,7 @@ menu = { path = "crates/menu" }
 migrator = { path = "crates/migrator" }
 mistral = { path = "crates/mistral" }
 multi_buffer = { path = "crates/multi_buffer" }
-node_runtime = { path = "crates/node_runtime" }
+js_runtime = { path = "crates/js_runtime" }
 notifications = { path = "crates/notifications" }
 ollama = { path = "crates/ollama" }
 open_ai = { path = "crates/open_ai" }

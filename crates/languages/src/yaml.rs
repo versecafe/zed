@@ -6,7 +6,7 @@ use language::{
     LanguageToolchainStore, LspAdapter, LspAdapterDelegate, language_settings::AllLanguageSettings,
 };
 use lsp::{LanguageServerBinary, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{Fs, lsp_store::language_server_settings};
 use serde_json::Value;
 use settings::{Settings, SettingsLocation};

@@ -17,7 +17,7 @@ use language::{
     language_settings::{AllLanguageSettings, language_settings},
 };
 use lsp::{CompletionContext, CompletionResponse, CompletionTriggerKind, LanguageServerName};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{
     Project, ProjectPath,
     search::{SearchQuery, SearchResult},
@@ -1633,7 +1633,7 @@ pub async fn init_test(
 
     let (opts, ssh_server_client) = SshRemoteClient::fake_server(cx, server_cx);
     let http_client = Arc::new(BlockedHttpClient);
-    let node_runtime = NodeRuntime::unavailable();
+    let js_runtime = NodeRuntime::unavailable();
     let languages = Arc::new(LanguageRegistry::new(cx.executor()));
     let proxy = Arc::new(ExtensionHostProxy::new());
     server_cx.update(HeadlessProject::init);
@@ -1645,7 +1645,7 @@ pub async fn init_test(
                 session: ssh_server_client,
                 fs: server_fs.clone(),
                 http_client,
-                node_runtime,
+                js_runtime,
                 languages,
                 extension_host_proxy: proxy,
             },

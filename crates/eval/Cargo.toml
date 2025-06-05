@@ -46,7 +46,7 @@ language_model.workspace = true
 language_models.workspace = true
 languages = { workspace = true, features = ["load-grammars"] }
 markdown.workspace = true
-node_runtime.workspace = true
+js_runtime.workspace = true
 pathdiff.workspace = true
 paths.workspace = true
 pretty_assertions.workspace = true

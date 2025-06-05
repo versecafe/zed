@@ -13,7 +13,7 @@ use gpui::{App, AppContext as _, Context, Entity, SemanticVersion, UpdateGlobal 
 use gpui_tokio::Tokio;
 use http_client::{Url, read_proxy_from_env};
 use language::LanguageRegistry;
-use node_runtime::{NodeBinaryOptions, NodeRuntime};
+use js_runtime::{NodeBinaryOptions, NodeRuntime};
 use paths::logs_dir;
 use project::project_settings::ProjectSettings;
 
@@ -467,7 +467,7 @@ pub fn execute_run(
                 )
             };
 
-            let node_runtime = NodeRuntime::new(http_client.clone(), None, node_settings_rx);
+            let js_runtime = NodeRuntime::new(http_client.clone(), None, node_settings_rx);
 
             let mut languages = LanguageRegistry::new(cx.background_executor().clone());
             languages.set_language_server_download_dir(paths::languages_dir().clone());
@@ -478,7 +478,7 @@ pub fn execute_run(
                     session: session.clone(),
                     fs,
                     http_client,
-                    node_runtime,
+                    js_runtime,
                     languages,
                     extension_host_proxy,
                 },

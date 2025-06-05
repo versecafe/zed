@@ -73,7 +73,7 @@ impl PhpDebugAdapter {
 
         Ok(DebugAdapterBinary {
             command: delegate
-                .node_runtime()
+                .js_runtime()
                 .binary_path()
                 .await?
                 .to_string_lossy()

@@ -19,7 +19,7 @@ use language::{
     },
     tree_sitter_typescript,
 };
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use project::{
     ProjectPath,
     lsp_store::{FormatTrigger, LspFormatTarget},
@@ -87,7 +87,7 @@ async fn test_sharing_an_ssh_remote_project(
                 session: server_ssh,
                 fs: remote_fs.clone(),
                 http_client: remote_http_client,
-                node_runtime: node,
+                js_runtime: node,
                 languages,
                 extension_host_proxy: Arc::new(ExtensionHostProxy::new()),
             },
@@ -254,7 +254,7 @@ async fn test_ssh_collaboration_git_branches(
                 session: server_ssh,
                 fs: remote_fs.clone(),
                 http_client: remote_http_client,
-                node_runtime: node,
+                js_runtime: node,
                 languages,
                 extension_host_proxy: Arc::new(ExtensionHostProxy::new()),
             },
@@ -459,7 +459,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
                 session: server_ssh,
                 fs: remote_fs.clone(),
                 http_client: remote_http_client,
-                node_runtime: NodeRuntime::unavailable(),
+                js_runtime: NodeRuntime::unavailable(),
                 languages,
                 extension_host_proxy: Arc::new(ExtensionHostProxy::new()),
             },
@@ -619,7 +619,7 @@ async fn test_remote_server_debugger(
                 session: server_ssh,
                 fs: remote_fs.clone(),
                 http_client: remote_http_client,
-                node_runtime: node,
+                js_runtime: node,
                 languages,
                 extension_host_proxy: Arc::new(ExtensionHostProxy::new()),
             },

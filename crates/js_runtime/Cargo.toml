@@ -1,5 +1,5 @@
 [package]
-name = "node_runtime"
+name = "js_runtime"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later"
 workspace = true
 
 [lib]
-path = "src/node_runtime.rs"
+path = "src/js_runtime.rs"
 doctest = false
 
 [features]

@@ -13,7 +13,7 @@ use language::{ContextProvider, LspAdapter, LspAdapterDelegate};
 use language::{LanguageName, ManifestName, ManifestProvider, ManifestQuery};
 use lsp::LanguageServerBinary;
 use lsp::LanguageServerName;
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use pet_core::Configuration;
 use pet_core::os_environment::Environment;
 use pet_core::python_environment::PythonEnvironmentKind;

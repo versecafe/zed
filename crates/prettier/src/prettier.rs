@@ -4,7 +4,7 @@ use fs::Fs;
 use gpui::{AsyncApp, Entity};
 use language::{Buffer, Diff, language_settings::language_settings};
 use lsp::{LanguageServer, LanguageServerId};
-use node_runtime::NodeRuntime;
+use js_runtime::NodeRuntime;
 use paths::default_prettier_dir;
 use serde::{Deserialize, Serialize};
 use std::{

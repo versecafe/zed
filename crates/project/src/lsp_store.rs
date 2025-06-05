@@ -59,7 +59,7 @@ use lsp::{
     TextEdit, WillRenameFiles, WorkDoneProgressCancelParams, WorkspaceFolder,
     notification::DidRenameFiles,
 };
-use node_runtime::read_package_installed_version;
+use js_runtime::read_package_installed_version;
 use parking_lot::Mutex;
 use postage::watch;
 use rand::prelude::*;
