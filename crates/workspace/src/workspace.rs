@@ -48,9 +48,9 @@ pub use item::{
     ProjectItem, SerializableItem, SerializableItemHandle, WeakItemHandle,
 };
 use itertools::Itertools;
+use js_runtime::JSRuntime;
 use language::{Buffer, LanguageRegistry, Rope};
 pub use modal_layer::*;
-use js_runtime::NodeRuntime;
 use notifications::{
     DetachAndPromptErr, Notifications, dismiss_app_notification,
     simple_message_notification::MessageNotification,
@@ -722,7 +722,7 @@ pub struct AppState {
     pub workspace_store: Entity<WorkspaceStore>,
     pub fs: Arc<dyn fs::Fs>,
     pub build_window_options: fn(Option<Uuid>, &mut App) -> WindowOptions,
-    pub js_runtime: NodeRuntime,
+    pub js_runtime: JSRuntime,
     pub session: Entity<AppSession>,
 }
 
@@ -775,7 +775,7 @@ impl AppState {
 
     #[cfg(any(test, feature = "test-support"))]
     pub fn test(cx: &mut App) -> Arc<Self> {
-        use js_runtime::NodeRuntime;
+        use js_runtime::JSRuntime;
         use session::Session;
         use settings::SettingsStore;
 
@@ -803,7 +803,7 @@ impl AppState {
             languages,
             user_store,
             workspace_store,
-            js_runtime: NodeRuntime::unavailable(),
+            js_runtime: JSRuntime::unavailable(),
             build_window_options: |_, _| Default::default(),
             session,
         })
@@ -5404,7 +5404,7 @@ impl Workspace {
 
     #[cfg(any(test, feature = "test-support"))]
     pub fn test_new(project: Entity<Project>, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        use js_runtime::NodeRuntime;
+        use js_runtime::JSRuntime;
         use session::Session;
 
         let client = project.read(cx).client();
@@ -5420,7 +5420,7 @@ impl Workspace {
             user_store,
             fs: project.read(cx).fs().clone(),
             build_window_options: |_, _| Default::default(),
-            js_runtime: NodeRuntime::unavailable(),
+            js_runtime: JSRuntime::unavailable(),
             session,
         });
         let workspace = Self::new(Default::default(), project, app_state, window, cx);

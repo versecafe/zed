@@ -6,11 +6,11 @@ use chrono::{DateTime, Local};
 use collections::HashMap;
 use gpui::{App, AppContext, AsyncApp, Task};
 use http_client::github::{AssetKind, GitHubLspBinaryVersion, build_asset_url};
+use js_runtime::JSRuntime;
 use language::{
     ContextLocation, ContextProvider, File, LanguageToolchainStore, LspAdapter, LspAdapterDelegate,
 };
 use lsp::{CodeActionKind, LanguageServerBinary, LanguageServerName};
-use js_runtime::NodeRuntime;
 use project::{Fs, lsp_store::language_server_settings};
 use serde_json::{Value, json};
 use smol::{fs, io::BufReader, lock::RwLock, stream::StreamExt};
@@ -427,7 +427,7 @@ fn eslint_server_binary_arguments(server_path: &Path) -> Vec<OsString> {
 }
 
 pub struct TypeScriptLspAdapter {
-    node: NodeRuntime,
+    node: JSRuntime,
 }
 
 impl TypeScriptLspAdapter {
@@ -436,7 +436,7 @@ impl TypeScriptLspAdapter {
     const SERVER_NAME: LanguageServerName =
         LanguageServerName::new_static("typescript-language-server");
     const PACKAGE_NAME: &str = "typescript";
-    pub fn new(node: NodeRuntime) -> Self {
+    pub fn new(node: JSRuntime) -> Self {
         TypeScriptLspAdapter { node }
     }
     async fn tsdk_path(fs: &dyn Fs, adapter: &Arc<dyn LspAdapterDelegate>) -> Option<&'static str> {
@@ -659,7 +659,7 @@ impl LspAdapter for TypeScriptLspAdapter {
 
 async fn get_cached_ts_server_binary(
     container_dir: PathBuf,
-    node: &NodeRuntime,
+    node: &JSRuntime,
 ) -> Option<LanguageServerBinary> {
     maybe!(async {
         let old_server_path = container_dir.join(TypeScriptLspAdapter::OLD_SERVER_PATH);
@@ -685,7 +685,7 @@ async fn get_cached_ts_server_binary(
 }
 
 pub struct EsLintLspAdapter {
-    node: NodeRuntime,
+    node: JSRuntime,
 }
 
 impl EsLintLspAdapter {
@@ -709,7 +709,7 @@ impl EsLintLspAdapter {
         "eslint.config.mts",
     ];
 
-    pub fn new(node: NodeRuntime) -> Self {
+    pub fn new(node: JSRuntime) -> Self {
         EsLintLspAdapter { node }
     }
 

@@ -14,6 +14,7 @@ use gpui::{
     WeakEntity, actions,
 };
 use http_client::HttpClient;
+use js_runtime::JSRuntime;
 use language::language_settings::CopilotSettings;
 use language::{
     Anchor, Bias, Buffer, BufferSnapshot, Language, PointUtf16, ToPointUtf16,
@@ -21,7 +22,6 @@ use language::{
     point_from_lsp, point_to_lsp,
 };
 use lsp::{LanguageServer, LanguageServerBinary, LanguageServerId, LanguageServerName};
-use js_runtime::NodeRuntime;
 use parking_lot::Mutex;
 use request::StatusNotification;
 use settings::SettingsStore;
@@ -57,7 +57,7 @@ pub fn init(
     new_server_id: LanguageServerId,
     fs: Arc<dyn Fs>,
     http: Arc<dyn HttpClient>,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     cx: &mut App,
 ) {
     copilot_chat::init(fs.clone(), http.clone(), cx);
@@ -302,7 +302,7 @@ pub struct Completion {
 
 pub struct Copilot {
     fs: Arc<dyn Fs>,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     server: CopilotServer,
     buffers: HashSet<WeakEntity<Buffer>>,
     server_id: LanguageServerId,
@@ -334,7 +334,7 @@ impl Copilot {
     fn start(
         new_server_id: LanguageServerId,
         fs: Arc<dyn Fs>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         cx: &mut Context<Self>,
     ) -> Self {
         let mut this = Self {
@@ -431,8 +431,8 @@ impl Copilot {
     #[cfg(any(test, feature = "test-support"))]
     pub fn fake(cx: &mut gpui::TestAppContext) -> (Entity<Self>, lsp::FakeLanguageServer) {
         use fs::FakeFs;
+        use js_runtime::JSRuntime;
         use lsp::FakeLanguageServer;
-        use js_runtime::NodeRuntime;
 
         let (server, fake_server) = FakeLanguageServer::new(
             LanguageServerId(0),
@@ -445,7 +445,7 @@ impl Copilot {
             Default::default(),
             &mut cx.to_async(),
         );
-        let js_runtime = NodeRuntime::unavailable();
+        let js_runtime = JSRuntime::unavailable();
         let this = cx.new(|cx| Self {
             server_id: LanguageServerId(0),
             fs: FakeFs::new(cx.background_executor().clone()),
@@ -464,7 +464,7 @@ impl Copilot {
     async fn start_language_server(
         new_server_id: LanguageServerId,
         fs: Arc<dyn Fs>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         env: Option<HashMap<String, String>>,
         this: WeakEntity<Self>,
         awaiting_sign_in_after_start: bool,
@@ -1078,14 +1078,12 @@ async fn clear_copilot_config_dir() {
     remove_matching(copilot_chat::copilot_chat_config_dir(), |_| true).await
 }
 
-async fn get_copilot_lsp(fs: Arc<dyn Fs>, js_runtime: NodeRuntime) -> anyhow::Result<PathBuf> {
+async fn get_copilot_lsp(fs: Arc<dyn Fs>, js_runtime: JSRuntime) -> anyhow::Result<PathBuf> {
     const PACKAGE_NAME: &str = "@github/copilot-language-server";
     const SERVER_PATH: &str =
         "node_modules/@github/copilot-language-server/dist/language-server.js";
 
-    let latest_version = js_runtime
-        .npm_package_latest_version(PACKAGE_NAME)
-        .await?;
+    let latest_version = js_runtime.npm_package_latest_version(PACKAGE_NAME).await?;
     let server_path = paths::copilot_dir().join(SERVER_PATH);
 
     fs.create_dir(paths::copilot_dir()).await?;

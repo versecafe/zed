@@ -32,8 +32,8 @@ use futures::{
 };
 use gpui::{App, AppContext, AsyncApp, Context, Entity, EventEmitter, SharedString, Task};
 use http_client::HttpClient;
+use js_runtime::JSRuntime;
 use language::{Buffer, LanguageToolchainStore, language_settings::InlayHintKind};
-use js_runtime::NodeRuntime;
 
 use remote::SshRemoteClient;
 use rpc::{
@@ -74,7 +74,7 @@ enum DapStoreMode {
 
 pub struct LocalDapStore {
     fs: Arc<dyn Fs>,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     http_client: Arc<dyn HttpClient>,
     environment: Entity<ProjectEnvironment>,
     toolchain_store: Arc<dyn LanguageToolchainStore>,
@@ -115,7 +115,7 @@ impl DapStore {
     #[expect(clippy::too_many_arguments)]
     pub fn new_local(
         http_client: Arc<dyn HttpClient>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         fs: Arc<dyn Fs>,
         environment: Entity<ProjectEnvironment>,
         toolchain_store: Arc<dyn LanguageToolchainStore>,
@@ -805,7 +805,7 @@ pub struct DapAdapterDelegate {
     fs: Arc<dyn Fs>,
     console: mpsc::UnboundedSender<String>,
     worktree: worktree::Snapshot,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     http_client: Arc<dyn HttpClient>,
     toolchain_store: Arc<dyn LanguageToolchainStore>,
     load_shell_env_task: Shared<Task<Option<HashMap<String, String>>>>,
@@ -816,7 +816,7 @@ impl DapAdapterDelegate {
         fs: Arc<dyn Fs>,
         worktree: worktree::Snapshot,
         status: mpsc::UnboundedSender<String>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         http_client: Arc<dyn HttpClient>,
         toolchain_store: Arc<dyn LanguageToolchainStore>,
         load_shell_env_task: Shared<Task<Option<HashMap<String, String>>>>,
@@ -846,7 +846,7 @@ impl dap::adapters::DapDelegate for DapAdapterDelegate {
         self.http_client.clone()
     }
 
-    fn js_runtime(&self) -> NodeRuntime {
+    fn js_runtime(&self) -> JSRuntime {
         self.js_runtime.clone()
     }
 

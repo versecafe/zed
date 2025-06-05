@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use collections::HashMap;
 use gpui::{App, Task};
 use gpui::{AsyncApp, SharedString};
+use js_runtime::JSRuntime;
 use language::Toolchain;
 use language::ToolchainList;
 use language::ToolchainLister;
@@ -13,7 +14,6 @@ use language::{ContextProvider, LspAdapter, LspAdapterDelegate};
 use language::{LanguageName, ManifestName, ManifestProvider, ManifestQuery};
 use lsp::LanguageServerBinary;
 use lsp::LanguageServerName;
-use js_runtime::NodeRuntime;
 use pet_core::Configuration;
 use pet_core::os_environment::Environment;
 use pet_core::python_environment::PythonEnvironmentKind;
@@ -89,13 +89,13 @@ fn server_binary_arguments(server_path: &Path) -> Vec<OsString> {
 }
 
 pub struct PythonLspAdapter {
-    node: NodeRuntime,
+    node: JSRuntime,
 }
 
 impl PythonLspAdapter {
     const SERVER_NAME: LanguageServerName = LanguageServerName::new_static("pyright");
 
-    pub fn new(node: NodeRuntime) -> Self {
+    pub fn new(node: JSRuntime) -> Self {
         PythonLspAdapter { node }
     }
 }
@@ -399,7 +399,7 @@ impl LspAdapter for PythonLspAdapter {
 
 async fn get_cached_server_binary(
     container_dir: PathBuf,
-    node: &NodeRuntime,
+    node: &JSRuntime,
 ) -> Option<LanguageServerBinary> {
     let server_path = container_dir.join(SERVER_PATH);
     if server_path.exists() {

@@ -7,9 +7,9 @@ use dap::DapRegistry;
 use futures::StreamExt;
 use gpui::{App, AsyncApp};
 use http_client::github::{GitHubLspBinaryVersion, latest_github_release};
+use js_runtime::JSRuntime;
 use language::{LanguageRegistry, LanguageToolchainStore, LspAdapter, LspAdapterDelegate};
 use lsp::{LanguageServerBinary, LanguageServerName};
-use js_runtime::NodeRuntime;
 use project::{ContextProviderWithTasks, Fs, lsp_store::language_server_settings};
 use serde_json::{Value, json};
 use settings::{KeymapFile, SettingsJsonSchemaParams, SettingsStore};
@@ -60,7 +60,7 @@ fn server_binary_arguments(server_path: &Path) -> Vec<OsString> {
 }
 
 pub struct JsonLspAdapter {
-    node: NodeRuntime,
+    node: JSRuntime,
     languages: Arc<LanguageRegistry>,
     workspace_config: RwLock<Option<Value>>,
 }
@@ -68,7 +68,7 @@ pub struct JsonLspAdapter {
 impl JsonLspAdapter {
     const PACKAGE_NAME: &str = "vscode-langservers-extracted";
 
-    pub fn new(node: NodeRuntime, languages: Arc<LanguageRegistry>) -> Self {
+    pub fn new(node: JSRuntime, languages: Arc<LanguageRegistry>) -> Self {
         Self {
             node,
             languages,
@@ -346,7 +346,7 @@ impl LspAdapter for JsonLspAdapter {
 
 async fn get_cached_server_binary(
     container_dir: PathBuf,
-    node: &NodeRuntime,
+    node: &JSRuntime,
 ) -> Option<LanguageServerBinary> {
     maybe!(async {
         let mut last_version_dir = None;

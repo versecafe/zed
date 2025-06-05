@@ -12,8 +12,8 @@ use git::GitHostingProviderRegistry;
 use gpui::{App, AppContext as _, Context, Entity, SemanticVersion, UpdateGlobal as _};
 use gpui_tokio::Tokio;
 use http_client::{Url, read_proxy_from_env};
+use js_runtime::{JSBinaryOptions, JSRuntime};
 use language::LanguageRegistry;
-use js_runtime::{NodeBinaryOptions, NodeRuntime};
 use paths::logs_dir;
 use project::project_settings::ProjectSettings;
 
@@ -467,7 +467,7 @@ pub fn execute_run(
                 )
             };
 
-            let js_runtime = NodeRuntime::new(http_client.clone(), None, node_settings_rx);
+            let js_runtime = JSRuntime::new(http_client.clone(), None, node_settings_rx);
 
             let mut languages = LanguageRegistry::new(cx.background_executor().clone());
             languages.set_language_server_download_dir(paths::languages_dir().clone());
@@ -756,7 +756,7 @@ fn initialize_settings(
     session: Arc<ChannelClient>,
     fs: Arc<dyn Fs>,
     cx: &mut App,
-) -> async_watch::Receiver<Option<NodeBinaryOptions>> {
+) -> async_watch::Receiver<Option<JSBinaryOptions>> {
     let user_settings_file_rx = watch_config_file(
         &cx.background_executor(),
         fs,
@@ -795,7 +795,7 @@ fn initialize_settings(
     cx.observe_global::<SettingsStore>(move |cx| {
         let settings = &ProjectSettings::get_global(cx).node;
         log::info!("Got new node settings: {:?}", settings);
-        let options = NodeBinaryOptions {
+        let options = JSBinaryOptions {
             allow_path_lookup: !settings.ignore_system_version,
             // TODO: Implement this setting
             allow_binary_download: true,

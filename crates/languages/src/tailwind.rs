@@ -3,9 +3,9 @@ use async_trait::async_trait;
 use collections::HashMap;
 use futures::StreamExt;
 use gpui::AsyncApp;
+use js_runtime::JSRuntime;
 use language::{LanguageToolchainStore, LspAdapter, LspAdapterDelegate};
 use lsp::{LanguageServerBinary, LanguageServerName};
-use js_runtime::NodeRuntime;
 use project::{Fs, lsp_store::language_server_settings};
 use serde_json::{Value, json};
 use smol::fs;
@@ -28,7 +28,7 @@ fn server_binary_arguments(server_path: &Path) -> Vec<OsString> {
 }
 
 pub struct TailwindLspAdapter {
-    node: NodeRuntime,
+    node: JSRuntime,
 }
 
 impl TailwindLspAdapter {
@@ -36,7 +36,7 @@ impl TailwindLspAdapter {
         LanguageServerName::new_static("tailwindcss-language-server");
     const PACKAGE_NAME: &str = "@tailwindcss/language-server";
 
-    pub fn new(node: NodeRuntime) -> Self {
+    pub fn new(node: JSRuntime) -> Self {
         TailwindLspAdapter { node }
     }
 }
@@ -187,7 +187,7 @@ impl LspAdapter for TailwindLspAdapter {
 
 async fn get_cached_server_binary(
     container_dir: PathBuf,
-    node: &NodeRuntime,
+    node: &JSRuntime,
 ) -> Option<LanguageServerBinary> {
     maybe!(async {
         let mut last_version_dir = None;

@@ -11,6 +11,7 @@ use gpui::{
     VisualContext,
 };
 use http_client::BlockedHttpClient;
+use js_runtime::JSRuntime;
 use language::{
     FakeLspAdapter, Language, LanguageConfig, LanguageMatcher, LanguageRegistry,
     language_settings::{
@@ -19,7 +20,6 @@ use language::{
     },
     tree_sitter_typescript,
 };
-use js_runtime::NodeRuntime;
 use project::{
     ProjectPath,
     lsp_store::{FormatTrigger, LspFormatTarget},
@@ -78,7 +78,7 @@ async fn test_sharing_an_ssh_remote_project(
     // User A connects to the remote project via SSH.
     server_cx.update(HeadlessProject::init);
     let remote_http_client = Arc::new(BlockedHttpClient);
-    let node = NodeRuntime::unavailable();
+    let node = JSRuntime::unavailable();
     let languages = Arc::new(LanguageRegistry::new(server_cx.executor()));
     let _headless_project = server_cx.new(|cx| {
         client::init_settings(cx);
@@ -245,7 +245,7 @@ async fn test_ssh_collaboration_git_branches(
     // User A connects to the remote project via SSH.
     server_cx.update(HeadlessProject::init);
     let remote_http_client = Arc::new(BlockedHttpClient);
-    let node = NodeRuntime::unavailable();
+    let node = JSRuntime::unavailable();
     let languages = Arc::new(LanguageRegistry::new(server_cx.executor()));
     let headless_project = server_cx.new(|cx| {
         client::init_settings(cx);
@@ -459,7 +459,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
                 session: server_ssh,
                 fs: remote_fs.clone(),
                 http_client: remote_http_client,
-                js_runtime: NodeRuntime::unavailable(),
+                js_runtime: JSRuntime::unavailable(),
                 languages,
                 extension_host_proxy: Arc::new(ExtensionHostProxy::new()),
             },
@@ -610,7 +610,7 @@ async fn test_remote_server_debugger(
     // User A connects to the remote project via SSH.
     server_cx.update(HeadlessProject::init);
     let remote_http_client = Arc::new(BlockedHttpClient);
-    let node = NodeRuntime::unavailable();
+    let node = JSRuntime::unavailable();
     let languages = Arc::new(LanguageRegistry::new(server_cx.executor()));
     let _headless_project = server_cx.new(|cx| {
         client::init_settings(cx);

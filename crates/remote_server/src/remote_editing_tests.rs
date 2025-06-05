@@ -12,12 +12,12 @@ use extension::ExtensionHostProxy;
 use fs::{FakeFs, Fs};
 use gpui::{AppContext as _, Entity, SemanticVersion, TestAppContext};
 use http_client::{BlockedHttpClient, FakeHttpClient};
+use js_runtime::JSRuntime;
 use language::{
     Buffer, FakeLspAdapter, LanguageConfig, LanguageMatcher, LanguageRegistry, LineEnding,
     language_settings::{AllLanguageSettings, language_settings},
 };
 use lsp::{CompletionContext, CompletionResponse, CompletionTriggerKind, LanguageServerName};
-use js_runtime::NodeRuntime;
 use project::{
     Project, ProjectPath,
     search::{SearchQuery, SearchResult},
@@ -1633,7 +1633,7 @@ pub async fn init_test(
 
     let (opts, ssh_server_client) = SshRemoteClient::fake_server(cx, server_cx);
     let http_client = Arc::new(BlockedHttpClient);
-    let js_runtime = NodeRuntime::unavailable();
+    let js_runtime = JSRuntime::unavailable();
     let languages = Arc::new(LanguageRegistry::new(cx.executor()));
     let proxy = Arc::new(ExtensionHostProxy::new());
     server_cx.update(HeadlessProject::init);
@@ -1684,7 +1684,7 @@ fn build_project(ssh: Entity<SshRemoteClient>, cx: &mut TestAppContext) -> Entit
         )
     });
 
-    let node = NodeRuntime::unavailable();
+    let node = JSRuntime::unavailable();
     let user_store = cx.new(|cx| UserStore::new(client.clone(), cx));
     let languages = Arc::new(LanguageRegistry::test(cx.executor()));
     let fs = FakeFs::new(cx.executor());

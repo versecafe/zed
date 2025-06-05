@@ -1,17 +1,17 @@
 use std::{collections::BTreeMap, path::PathBuf, sync::Arc};
 
-use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
+use criterion::{BatchSize, BenchmarkId, Criterion, criterion_group, criterion_main};
 use extension::{
-    extension_builder::{CompileExtensionOptions, ExtensionBuilder},
     ExtensionCapability, ExtensionHostProxy, ExtensionLibraryKind, ExtensionManifest,
     LanguageServerManifestEntry, LibManifestEntry, SchemaVersion,
+    extension_builder::{CompileExtensionOptions, ExtensionBuilder},
 };
 use extension_host::wasm_host::WasmHost;
 use fs::RealFs;
 use gpui::{SemanticVersion, TestAppContext, TestDispatcher};
 use http_client::{FakeHttpClient, Response};
-use js_runtime::NodeRuntime;
-use rand::{rngs::StdRng, SeedableRng};
+use js_runtime::JSRuntime;
+use rand::{SeedableRng, rngs::StdRng};
 use reqwest_client::ReqwestClient;
 use serde_json::json;
 use settings::SettingsStore;
@@ -91,9 +91,9 @@ fn extension_builder() -> ExtensionBuilder {
 }
 
 fn wasm_host(cx: &TestAppContext, extensions_dir: &TempTree) -> Arc<WasmHost> {
-    let http_client = FakeHttpClient::create(
-        async | _ | { Ok(Response::builder().status(404).body("not found".into())?) },
-    );
+    let http_client = FakeHttpClient::create(async |_| {
+        Ok(Response::builder().status(404).body("not found".into())?)
+    });
     let extensions_dir = extensions_dir.path().canonicalize().unwrap();
     let work_dir = extensions_dir.join("work");
     let fs = Arc::new(RealFs::new(None, cx.executor()));
@@ -102,7 +102,7 @@ fn wasm_host(cx: &TestAppContext, extensions_dir: &TempTree) -> Arc<WasmHost> {
         WasmHost::new(
             fs,
             http_client,
-            NodeRuntime::unavailable(),
+            JSRuntime::unavailable(),
             Arc::new(ExtensionHostProxy::new()),
             work_dir,
             cx,

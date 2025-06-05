@@ -1,7 +1,7 @@
 use assets::Assets;
-use gpui::{rgb, Application, Entity, KeyBinding, Length, StyleRefinement, WindowOptions};
-use js_runtime::NodeRuntime;
-use language::{language_settings::AllLanguageSettings, LanguageRegistry};
+use gpui::{Application, Entity, KeyBinding, Length, StyleRefinement, WindowOptions, rgb};
+use js_runtime::JSRuntime;
+use language::{LanguageRegistry, language_settings::AllLanguageSettings};
 use markdown::{Markdown, MarkdownElement, MarkdownStyle};
 use settings::SettingsStore;
 use std::sync::Arc;
@@ -28,7 +28,7 @@ pub fn main() {
         });
         cx.bind_keys([KeyBinding::new("cmd-c", markdown::Copy, None)]);
 
-        let js_runtime = NodeRuntime::unavailable();
+        let js_runtime = JSRuntime::unavailable();
         let language_registry = Arc::new(LanguageRegistry::new(cx.background_executor().clone()));
         languages::init(language_registry.clone(), js_runtime, cx);
         theme::init(LoadThemes::JustBase, cx);

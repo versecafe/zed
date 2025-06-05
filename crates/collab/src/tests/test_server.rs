@@ -21,8 +21,8 @@ use futures::{StreamExt as _, channel::oneshot};
 use git::GitHostingProviderRegistry;
 use gpui::{AppContext as _, BackgroundExecutor, Entity, Task, TestAppContext, VisualTestContext};
 use http_client::FakeHttpClient;
+use js_runtime::JSRuntime;
 use language::LanguageRegistry;
-use js_runtime::NodeRuntime;
 use notifications::NotificationStore;
 use parking_lot::Mutex;
 use project::{Project, WorktreeId};
@@ -289,7 +289,7 @@ impl TestServer {
             languages: language_registry,
             fs: fs.clone(),
             build_window_options: |_, _| Default::default(),
-            js_runtime: NodeRuntime::unavailable(),
+            js_runtime: JSRuntime::unavailable(),
             session,
         });
 

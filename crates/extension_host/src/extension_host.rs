@@ -34,11 +34,11 @@ use gpui::{
     actions,
 };
 use http_client::{AsyncBody, HttpClient, HttpClientWithUrl};
+use js_runtime::JSRuntime;
 use language::{
     LanguageConfig, LanguageMatcher, LanguageName, LanguageQueries, LoadedLanguage,
     QUERY_FILENAME_PREFIXES, Rope,
 };
-use js_runtime::NodeRuntime;
 use project::ContextProviderWithTasks;
 use release_channel::ReleaseChannel;
 use remote::SshRemoteClient;
@@ -183,7 +183,7 @@ pub fn init(
     extension_host_proxy: Arc<ExtensionHostProxy>,
     fs: Arc<dyn Fs>,
     client: Arc<Client>,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     cx: &mut App,
 ) {
     ExtensionSettings::register(cx);
@@ -228,7 +228,7 @@ impl ExtensionStore {
         http_client: Arc<HttpClientWithUrl>,
         builder_client: Arc<dyn HttpClient>,
         telemetry: Option<Arc<Telemetry>>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         cx: &mut Context<Self>,
     ) -> Self {
         let work_dir = extensions_dir.join("work");

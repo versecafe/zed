@@ -19,9 +19,9 @@ use futures::future;
 use gpui::http_client::read_proxy_from_env;
 use gpui::{App, AppContext, Application, AsyncApp, Entity, SemanticVersion, UpdateGlobal};
 use gpui_tokio::Tokio;
+use js_runtime::{JSBinaryOptions, JSRuntime};
 use language::LanguageRegistry;
 use language_model::{ConfiguredModel, LanguageModel, LanguageModelRegistry, SelectedModel};
-use js_runtime::{NodeBinaryOptions, NodeRuntime};
 use project::Project;
 use project::project_settings::ProjectSettings;
 use prompt_store::PromptBuilder;
@@ -329,7 +329,7 @@ pub struct AgentAppState {
     pub client: Arc<Client>,
     pub user_store: Entity<UserStore>,
     pub fs: Arc<dyn fs::Fs>,
-    pub js_runtime: NodeRuntime,
+    pub js_runtime: JSRuntime,
 
     // Additional fields not present in `workspace::AppState`.
     pub prompt_builder: Arc<PromptBuilder>,
@@ -388,7 +388,7 @@ pub fn init(cx: &mut App) -> Arc<AgentAppState> {
     let (tx, rx) = async_watch::channel(None);
     cx.observe_global::<SettingsStore>(move |cx| {
         let settings = &ProjectSettings::get_global(cx).node;
-        let options = NodeBinaryOptions {
+        let options = JSBinaryOptions {
             allow_path_lookup: !settings.ignore_system_version,
             allow_binary_download: true,
             use_paths: settings.path.as_ref().map(|node_path| {
@@ -409,7 +409,7 @@ pub fn init(cx: &mut App) -> Arc<AgentAppState> {
         tx.send(Some(options)).log_err();
     })
     .detach();
-    let js_runtime = NodeRuntime::new(client.http_client(), None, rx);
+    let js_runtime = JSRuntime::new(client.http_client(), None, rx);
 
     let extension_host_proxy = ExtensionHostProxy::global(cx);
 

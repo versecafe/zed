@@ -4238,7 +4238,7 @@ mod tests {
         cx.set_global(settings);
         let languages = LanguageRegistry::test(cx.executor());
         let languages = Arc::new(languages);
-        let js_runtime = js_runtime::NodeRuntime::unavailable();
+        let js_runtime = js_runtime::JSRuntime::unavailable();
         cx.update(|cx| {
             languages::init(languages.clone(), js_runtime, cx);
         });

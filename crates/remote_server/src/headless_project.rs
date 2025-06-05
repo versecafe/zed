@@ -6,8 +6,8 @@ use extension_host::headless_host::HeadlessExtensionStore;
 use fs::Fs;
 use gpui::{App, AppContext as _, AsyncApp, Context, Entity, PromptLevel};
 use http_client::HttpClient;
+use js_runtime::JSRuntime;
 use language::{Buffer, BufferEvent, LanguageRegistry, proto::serialize_operation};
-use js_runtime::NodeRuntime;
 use project::{
     LspStore, LspStoreEvent, ManifestTree, PrettierStore, ProjectEnvironment, ProjectPath,
     ToolchainStore, WorktreeId,
@@ -53,7 +53,7 @@ pub struct HeadlessAppState {
     pub session: Arc<ChannelClient>,
     pub fs: Arc<dyn Fs>,
     pub http_client: Arc<dyn HttpClient>,
-    pub js_runtime: NodeRuntime,
+    pub js_runtime: JSRuntime,
     pub languages: Arc<LanguageRegistry>,
     pub extension_host_proxy: Arc<ExtensionHostProxy>,
 }

@@ -1,13 +1,13 @@
 use assets::Assets;
-use gpui::{prelude::*, rgb, Application, Entity, KeyBinding, StyleRefinement, WindowOptions};
-use js_runtime::NodeRuntime;
-use language::{language_settings::AllLanguageSettings, LanguageRegistry};
+use gpui::{Application, Entity, KeyBinding, StyleRefinement, WindowOptions, prelude::*, rgb};
+use js_runtime::JSRuntime;
+use language::{LanguageRegistry, language_settings::AllLanguageSettings};
 use markdown::{Markdown, MarkdownElement, MarkdownStyle};
 use settings::SettingsStore;
 use std::sync::Arc;
 use theme::LoadThemes;
 use ui::prelude::*;
-use ui::{div, App, Window};
+use ui::{App, Window, div};
 
 const MARKDOWN_EXAMPLE: &str = r#"
 # Markdown Example Document
@@ -44,7 +44,7 @@ pub fn main() {
         });
         cx.bind_keys([KeyBinding::new("cmd-c", markdown::Copy, None)]);
 
-        let js_runtime = NodeRuntime::unavailable();
+        let js_runtime = JSRuntime::unavailable();
         theme::init(LoadThemes::JustBase, cx);
 
         let language_registry = LanguageRegistry::new(cx.background_executor().clone());

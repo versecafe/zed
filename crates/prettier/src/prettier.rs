@@ -2,9 +2,9 @@ use anyhow::Context as _;
 use collections::{HashMap, HashSet};
 use fs::Fs;
 use gpui::{AsyncApp, Entity};
+use js_runtime::JSRuntime;
 use language::{Buffer, Diff, language_settings::language_settings};
 use lsp::{LanguageServer, LanguageServerId};
-use js_runtime::NodeRuntime;
 use paths::default_prettier_dir;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -240,7 +240,7 @@ impl Prettier {
     pub async fn start(
         _: LanguageServerId,
         prettier_dir: PathBuf,
-        _: NodeRuntime,
+        _: JSRuntime,
         _: AsyncApp,
     ) -> anyhow::Result<Self> {
         Ok(Self::Test(TestPrettier {
@@ -253,7 +253,7 @@ impl Prettier {
     pub async fn start(
         server_id: LanguageServerId,
         prettier_dir: PathBuf,
-        node: NodeRuntime,
+        node: JSRuntime,
         mut cx: AsyncApp,
     ) -> anyhow::Result<Self> {
         use lsp::{LanguageServerBinary, LanguageServerName};

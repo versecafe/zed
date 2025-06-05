@@ -71,6 +71,7 @@ use gpui::{
     Task, WeakEntity, Window,
 };
 use itertools::Itertools;
+use js_runtime::JSRuntime;
 use language::{
     Buffer, BufferEvent, Capability, CodeLabel, CursorShape, DiagnosticSourceKind, Language,
     LanguageName, LanguageRegistry, PointUtf16, ToOffset, ToPointUtf16, Toolchain, ToolchainList,
@@ -83,7 +84,6 @@ use lsp::{
 use lsp_command::*;
 use lsp_store::{CompletionDocumentation, LspFormatTarget, OpenLspBufferHandle};
 pub use manifest_tree::ManifestProviders;
-use js_runtime::NodeRuntime;
 use parking_lot::Mutex;
 pub use prettier_store::PrettierStore;
 use project_settings::{ProjectSettings, SettingsObserver, SettingsObserverEvent};
@@ -194,7 +194,7 @@ pub struct Project {
     git_diff_debouncer: DebouncedDelay<Self>,
     remotely_created_models: Arc<Mutex<RemotelyCreatedModels>>,
     terminals: Terminals,
-    node: Option<NodeRuntime>,
+    node: Option<JSRuntime>,
     search_history: SearchHistory,
     search_included_history: SearchHistory,
     search_excluded_history: SearchHistory,
@@ -930,7 +930,7 @@ impl Project {
 
     pub fn local(
         client: Arc<Client>,
-        node: NodeRuntime,
+        node: JSRuntime,
         user_store: Entity<UserStore>,
         languages: Arc<LanguageRegistry>,
         fs: Arc<dyn Fs>,
@@ -1092,7 +1092,7 @@ impl Project {
     pub fn ssh(
         ssh: Entity<SshRemoteClient>,
         client: Arc<Client>,
-        node: NodeRuntime,
+        node: JSRuntime,
         user_store: Entity<UserStore>,
         languages: Arc<LanguageRegistry>,
         fs: Arc<dyn Fs>,
@@ -1602,7 +1602,7 @@ impl Project {
             .update(|cx| {
                 Project::local(
                     client,
-                    js_runtime::NodeRuntime::unavailable(),
+                    js_runtime::JSRuntime::unavailable(),
                     user_store,
                     Arc::new(languages),
                     fs,
@@ -1642,7 +1642,7 @@ impl Project {
         let project = cx.update(|cx| {
             Project::local(
                 client,
-                js_runtime::NodeRuntime::unavailable(),
+                js_runtime::JSRuntime::unavailable(),
                 user_store,
                 Arc::new(languages),
                 fs,
@@ -1713,7 +1713,7 @@ impl Project {
         self.user_store.clone()
     }
 
-    pub fn js_runtime(&self) -> Option<&NodeRuntime> {
+    pub fn js_runtime(&self) -> Option<&JSRuntime> {
         self.node.as_ref()
     }
 

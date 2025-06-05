@@ -10,9 +10,9 @@ use fs::{FakeFs, Fs, RealFs};
 use futures::{AsyncReadExt, StreamExt, io::BufReader};
 use gpui::{AppContext as _, SemanticVersion, SharedString, TestAppContext};
 use http_client::{FakeHttpClient, Response};
+use js_runtime::JSRuntime;
 use language::{BinaryStatus, LanguageMatcher, LanguageRegistry};
 use lsp::LanguageServerName;
-use js_runtime::NodeRuntime;
 use parking_lot::Mutex;
 use project::{DEFAULT_COMPLETION_CONTEXT, Project};
 use release_channel::AppVersion;
@@ -270,7 +270,7 @@ async fn test_extension_store(cx: &mut TestAppContext) {
     theme_extension::init(proxy.clone(), theme_registry.clone(), cx.executor());
     let language_registry = Arc::new(LanguageRegistry::test(cx.executor()));
     language_extension::init(proxy.clone(), language_registry.clone());
-    let js_runtime = NodeRuntime::unavailable();
+    let js_runtime = JSRuntime::unavailable();
 
     let store = cx.new(|cx| {
         ExtensionStore::new(
@@ -550,7 +550,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     theme_extension::init(proxy.clone(), theme_registry.clone(), cx.executor());
     let language_registry = project.read_with(cx, |project, _cx| project.languages().clone());
     language_extension::init(proxy.clone(), language_registry.clone());
-    let js_runtime = NodeRuntime::unavailable();
+    let js_runtime = JSRuntime::unavailable();
 
     let mut status_updates = language_registry.language_server_binary_statuses();
 

@@ -20,10 +20,10 @@ use futures::{
 };
 use gpui::{App, AsyncApp, BackgroundExecutor, Task};
 use http_client::HttpClient;
+use js_runtime::JSRuntime;
 use language::LanguageName;
 use lsp::LanguageServerName;
 use moka::sync::Cache;
-use js_runtime::NodeRuntime;
 use release_channel::ReleaseChannel;
 use semantic_version::SemanticVersion;
 use std::borrow::Cow;
@@ -43,7 +43,7 @@ pub struct WasmHost {
     engine: Engine,
     release_channel: ReleaseChannel,
     http_client: Arc<dyn HttpClient>,
-    js_runtime: NodeRuntime,
+    js_runtime: JSRuntime,
     pub(crate) proxy: Arc<ExtensionHostProxy>,
     fs: Arc<dyn Fs>,
     pub work_dir: PathBuf,
@@ -451,7 +451,7 @@ impl WasmHost {
     pub fn new(
         fs: Arc<dyn Fs>,
         http_client: Arc<dyn HttpClient>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         proxy: Arc<ExtensionHostProxy>,
         work_dir: PathBuf,
         cx: &mut App,

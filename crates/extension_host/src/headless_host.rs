@@ -10,9 +10,9 @@ use extension::{
 use fs::{Fs, RemoveOptions, RenameOptions};
 use gpui::{App, AppContext as _, AsyncApp, Context, Entity, Task, WeakEntity};
 use http_client::HttpClient;
+use js_runtime::JSRuntime;
 use language::{LanguageConfig, LanguageName, LanguageQueries, LoadedLanguage};
 use lsp::LanguageServerName;
-use js_runtime::NodeRuntime;
 
 use crate::wasm_host::{WasmExtension, WasmHost};
 
@@ -39,7 +39,7 @@ impl HeadlessExtensionStore {
         http_client: Arc<dyn HttpClient>,
         extension_dir: PathBuf,
         extension_host_proxy: Arc<ExtensionHostProxy>,
-        js_runtime: NodeRuntime,
+        js_runtime: JSRuntime,
         cx: &mut App,
     ) -> Entity<Self> {
         cx.new(|cx| Self {

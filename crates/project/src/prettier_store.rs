@@ -13,12 +13,12 @@ use futures::{
     stream::FuturesUnordered,
 };
 use gpui::{AppContext as _, AsyncApp, Context, Entity, EventEmitter, Task, WeakEntity};
+use js_runtime::JSRuntime;
 use language::{
     Buffer, LanguageRegistry, LocalFile,
     language_settings::{Formatter, LanguageSettings, SelectedFormatter},
 };
 use lsp::{LanguageServer, LanguageServerId, LanguageServerName};
-use js_runtime::NodeRuntime;
 use paths::default_prettier_dir;
 use prettier::Prettier;
 use smol::stream::StreamExt;
@@ -30,7 +30,7 @@ use crate::{
 };
 
 pub struct PrettierStore {
-    node: NodeRuntime,
+    node: JSRuntime,
     fs: Arc<dyn Fs>,
     languages: Arc<LanguageRegistry>,
     worktree_store: Entity<WorktreeStore>,
@@ -53,7 +53,7 @@ impl EventEmitter<PrettierStoreEvent> for PrettierStore {}
 
 impl PrettierStore {
     pub fn new(
-        node: NodeRuntime,
+        node: JSRuntime,
         fs: Arc<dyn Fs>,
         languages: Arc<LanguageRegistry>,
         worktree_store: Entity<WorktreeStore>,
@@ -272,7 +272,7 @@ impl PrettierStore {
     }
 
     fn start_prettier(
-        node: NodeRuntime,
+        node: JSRuntime,
         prettier_dir: PathBuf,
         worktree_id: Option<WorktreeId>,
         cx: &mut Context<Self>,
@@ -301,7 +301,7 @@ impl PrettierStore {
     }
 
     fn start_default_prettier(
-        node: NodeRuntime,
+        node: JSRuntime,
         worktree_id: Option<WorktreeId>,
         cx: &mut Context<PrettierStore>,
     ) -> Task<anyhow::Result<PrettierTask>> {
@@ -814,7 +814,7 @@ impl DefaultPrettier {
 
     pub fn prettier_task(
         &mut self,
-        node: &NodeRuntime,
+        node: &JSRuntime,
         worktree_id: Option<WorktreeId>,
         cx: &mut Context<PrettierStore>,
     ) -> Option<Task<anyhow::Result<PrettierTask>>> {
@@ -832,7 +832,7 @@ impl DefaultPrettier {
 impl PrettierInstance {
     pub fn prettier_task(
         &mut self,
-        node: &NodeRuntime,
+        node: &JSRuntime,
         prettier_dir: Option<&Path>,
         worktree_id: Option<WorktreeId>,
         cx: &mut Context<PrettierStore>,
@@ -883,7 +883,7 @@ impl PrettierInstance {
 async fn install_prettier_packages(
     fs: &dyn Fs,
     plugins_to_install: HashSet<Arc<str>>,
-    node: NodeRuntime,
+    node: JSRuntime,
 ) -> anyhow::Result<()> {
     let packages_to_versions = future::try_join_all(
         plugins_to_install

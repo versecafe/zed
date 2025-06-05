@@ -21,30 +21,30 @@ use util::archive::extract_zip;
 const NODE_CA_CERTS_ENV_VAR: &str = "NODE_EXTRA_CA_CERTS";
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct NodeBinaryOptions {
+pub struct JSBinaryOptions {
     pub allow_path_lookup: bool,
     pub allow_binary_download: bool,
     pub use_paths: Option<(PathBuf, PathBuf)>,
 }
 
 #[derive(Clone)]
-pub struct NodeRuntime(Arc<Mutex<NodeRuntimeState>>);
+pub struct JSRuntime(Arc<Mutex<JSRuntimeState>>);
 
-struct NodeRuntimeState {
+struct JSRuntimeState {
     http: Arc<dyn HttpClient>,
-    instance: Option<Box<dyn NodeRuntimeTrait>>,
-    last_options: Option<NodeBinaryOptions>,
-    options: async_watch::Receiver<Option<NodeBinaryOptions>>,
+    instance: Option<Box<dyn JSRuntimeTrait>>,
+    last_options: Option<JSBinaryOptions>,
+    options: async_watch::Receiver<Option<JSBinaryOptions>>,
     shell_env_loaded: Shared<oneshot::Receiver<()>>,
 }
 
-impl NodeRuntime {
+impl JSRuntime {
     pub fn new(
         http: Arc<dyn HttpClient>,
         shell_env_loaded: Option<oneshot::Receiver<()>>,
-        options: async_watch::Receiver<Option<NodeBinaryOptions>>,
+        options: async_watch::Receiver<Option<JSBinaryOptions>>,
     ) -> Self {
-        NodeRuntime(Arc::new(Mutex::new(NodeRuntimeState {
+        JSRuntime(Arc::new(Mutex::new(JSRuntimeState {
             http,
             instance: None,
             last_options: None,
@@ -54,16 +54,16 @@ impl NodeRuntime {
     }
 
     pub fn unavailable() -> Self {
-        NodeRuntime(Arc::new(Mutex::new(NodeRuntimeState {
+        JSRuntime(Arc::new(Mutex::new(JSRuntimeState {
             http: Arc::new(http_client::BlockedHttpClient),
             instance: None,
             last_options: None,
-            options: async_watch::channel(Some(NodeBinaryOptions::default())).1,
+            options: async_watch::channel(Some(JSBinaryOptions::default())).1,
             shell_env_loaded: oneshot::channel().1.shared(),
         })))
     }
 
-    async fn instance(&self) -> Result<Box<dyn NodeRuntimeTrait>> {
+    async fn instance(&self) -> Result<Box<dyn JSRuntimeTrait>> {
         let mut state = self.0.lock().await;
 
         while state.options.borrow().is_none() {
@@ -77,24 +77,24 @@ impl NodeRuntime {
             return Ok(instance.boxed_clone());
         }
 
-        if let Some((node, npm)) = options.use_paths.as_ref() {
-            let instance = SystemNodeRuntime::new(node.clone(), npm.clone()).await?;
+        if let Some((runtime, package_manager)) = options.use_paths.as_ref() {
+            let instance = SystemJSRuntime::new(runtime.clone(), package_manager.clone()).await?;
             state.instance = Some(instance.boxed_clone());
             return Ok(instance);
         }
 
         if options.allow_path_lookup {
             state.shell_env_loaded.clone().await.ok();
-            if let Some(instance) = SystemNodeRuntime::detect().await {
+            if let Some(instance) = SystemJSRuntime::detect().await {
                 state.instance = Some(instance.boxed_clone());
                 return Ok(instance);
             }
         }
 
         let instance = if options.allow_binary_download {
-            ManagedNodeRuntime::install_if_needed(&state.http).await?
+            ManagedJSRuntime::install_if_needed(&state.http).await?
         } else {
-            Box::new(UnavailableNodeRuntime)
+            Box::new(UnavailableJSRuntime)
         };
 
         state.instance = Some(instance.boxed_clone());
@@ -242,8 +242,8 @@ pub struct NpmInfoDistTags {
 }
 
 #[async_trait::async_trait]
-trait NodeRuntimeTrait: Send + Sync {
-    fn boxed_clone(&self) -> Box<dyn NodeRuntimeTrait>;
+trait JSRuntimeTrait: Send + Sync {
+    fn boxed_clone(&self) -> Box<dyn JSRuntimeTrait>;
     fn binary_path(&self) -> Result<PathBuf>;
 
     async fn run_npm_subcommand(
@@ -262,11 +262,11 @@ trait NodeRuntimeTrait: Send + Sync {
 }
 
 #[derive(Clone)]
-struct ManagedNodeRuntime {
+struct ManagedJSRuntime {
     installation_path: PathBuf,
 }
 
-impl ManagedNodeRuntime {
+impl ManagedJSRuntime {
     const VERSION: &str = "v22.5.1";
 
     #[cfg(not(windows))]
@@ -279,7 +279,7 @@ impl ManagedNodeRuntime {
     #[cfg(windows)]
     const NPM_PATH: &str = "node_modules/npm/bin/npm-cli.js";
 
-    async fn install_if_needed(http: &Arc<dyn HttpClient>) -> Result<Box<dyn NodeRuntimeTrait>> {
+    async fn install_if_needed(http: &Arc<dyn HttpClient>) -> Result<Box<dyn JSRuntimeTrait>> {
         log::info!("Node runtime install_if_needed");
 
         let os = match consts::OS {
@@ -360,7 +360,7 @@ impl ManagedNodeRuntime {
         _ = fs::write(node_dir.join("blank_user_npmrc"), []).await;
         _ = fs::write(node_dir.join("blank_global_npmrc"), []).await;
 
-        anyhow::Ok(Box::new(ManagedNodeRuntime {
+        anyhow::Ok(Box::new(ManagedJSRuntime {
             installation_path: node_dir,
         }))
     }
@@ -388,8 +388,8 @@ fn path_with_node_binary_prepended(node_binary: &Path) -> Option<OsString> {
 }
 
 #[async_trait::async_trait]
-impl NodeRuntimeTrait for ManagedNodeRuntime {
-    fn boxed_clone(&self) -> Box<dyn NodeRuntimeTrait> {
+impl JSRuntimeTrait for ManagedJSRuntime {
+    fn boxed_clone(&self) -> Box<dyn JSRuntimeTrait> {
         Box::new(self.clone())
     }
 
@@ -470,21 +470,21 @@ impl NodeRuntimeTrait for ManagedNodeRuntime {
 }
 
 #[derive(Clone)]
-pub struct SystemNodeRuntime {
+pub struct SystemJSRuntime {
     node: PathBuf,
     npm: PathBuf,
     global_node_modules: PathBuf,
     scratch_dir: PathBuf,
 }
 
-impl SystemNodeRuntime {
+impl SystemJSRuntime {
     const MIN_VERSION: semver::Version = Version::new(20, 0, 0);
-    async fn new(node: PathBuf, npm: PathBuf) -> Result<Box<dyn NodeRuntimeTrait>> {
-        let output = util::command::new_smol_command(&node)
+    async fn new(runtime: PathBuf, package_manager: PathBuf) -> Result<Box<dyn JSRuntimeTrait>> {
+        let output = util::command::new_smol_command(&runtime)
             .arg("--version")
             .output()
             .await
-            .with_context(|| format!("running node from {:?}", node))?;
+            .with_context(|| format!("running node from {:?}", runtime))?;
         if !output.status.success() {
             anyhow::bail!(
                 "failed to run node --version. stdout: {}, stderr: {}",
@@ -497,7 +497,7 @@ impl SystemNodeRuntime {
         if version < Self::MIN_VERSION {
             anyhow::bail!(
                 "node at {} is too old. want: {}, got: {}",
-                node.to_string_lossy(),
+                runtime.to_string_lossy(),
                 Self::MIN_VERSION,
                 version
             )
@@ -508,8 +508,8 @@ impl SystemNodeRuntime {
         fs::create_dir(scratch_dir.join("cache")).await.ok();
 
         let mut this = Self {
-            node,
-            npm,
+            node: runtime,
+            npm: package_manager,
             global_node_modules: PathBuf::default(),
             scratch_dir,
         };
@@ -520,7 +520,7 @@ impl SystemNodeRuntime {
         Ok(Box::new(this))
     }
 
-    async fn detect() -> Option<Box<dyn NodeRuntimeTrait>> {
+    async fn detect() -> Option<Box<dyn JSRuntimeTrait>> {
         let node = which::which("node").ok()?;
         let npm = which::which("npm").ok()?;
         Self::new(node, npm).await.log_err()
@@ -528,8 +528,8 @@ impl SystemNodeRuntime {
 }
 
 #[async_trait::async_trait]
-impl NodeRuntimeTrait for SystemNodeRuntime {
-    fn boxed_clone(&self) -> Box<dyn NodeRuntimeTrait> {
+impl JSRuntimeTrait for SystemJSRuntime {
+    fn boxed_clone(&self) -> Box<dyn JSRuntimeTrait> {
         Box::new(self.clone())
     }
 
@@ -603,12 +603,12 @@ pub async fn read_package_installed_version(
     Ok(Some(package_json.version))
 }
 
-pub struct UnavailableNodeRuntime;
+pub struct UnavailableJSRuntime;
 
 #[async_trait::async_trait]
-impl NodeRuntimeTrait for UnavailableNodeRuntime {
-    fn boxed_clone(&self) -> Box<dyn NodeRuntimeTrait> {
-        Box::new(UnavailableNodeRuntime)
+impl JSRuntimeTrait for UnavailableJSRuntime {
+    fn boxed_clone(&self) -> Box<dyn JSRuntimeTrait> {
+        Box::new(UnavailableJSRuntime)
     }
     fn binary_path(&self) -> Result<PathBuf> {
         bail!("binary_path: no node runtime available")
@@ -645,7 +645,7 @@ fn configure_npm_command(
 
     if let Some(proxy) = proxy {
         // Map proxy settings from `http://localhost:10809` to `http://127.0.0.1:10809`
-        // NodeRuntime without environment information can not parse `localhost`
+        // JSRuntime without environment information can not parse `localhost`
         // correctly.
         // TODO: map to `[::1]` if we are using ipv6
         let proxy = proxy

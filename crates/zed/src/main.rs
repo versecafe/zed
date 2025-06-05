@@ -23,7 +23,7 @@ use prompt_store::PromptBuilder;
 use reqwest_client::ReqwestClient;
 
 use assets::Assets;
-use js_runtime::{NodeBinaryOptions, NodeRuntime};
+use js_runtime::{JSBinaryOptions, JSRuntime};
 use parking_lot::Mutex;
 use project::project_settings::ProjectSettings;
 use recent_projects::{SshSettings, open_ssh_project};
@@ -415,7 +415,7 @@ Error: Running Zed as root or via sudo is unsupported.
         let (tx, rx) = async_watch::channel(None);
         cx.observe_global::<SettingsStore>(move |cx| {
             let settings = &ProjectSettings::get_global(cx).node;
-            let options = NodeBinaryOptions {
+            let options = JSBinaryOptions {
                 allow_path_lookup: !settings.ignore_system_version,
                 // TODO: Expose this setting
                 allow_binary_download: true,
@@ -437,7 +437,7 @@ Error: Running Zed as root or via sudo is unsupported.
             tx.send(Some(options)).log_err();
         })
         .detach();
-        let js_runtime = NodeRuntime::new(client.http_client(), Some(shell_env_loaded_rx), rx);
+        let js_runtime = JSRuntime::new(client.http_client(), Some(shell_env_loaded_rx), rx);
 
         debug_adapter_extension::init(extension_host_proxy.clone(), cx);
         language::init(cx);
