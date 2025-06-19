@@ -266,6 +266,8 @@ struct ManagedJSRuntime {
     installation_path: PathBuf,
 }
 
+// TODO: everything below this needs an abstraction layer to allow implementations for Node, Bun, & Deno
+
 impl ManagedJSRuntime {
     const VERSION: &str = "v22.5.1";
 
@@ -478,7 +480,7 @@ pub struct SystemJSRuntime {
 }
 
 impl SystemJSRuntime {
-    const MIN_VERSION: semver::Version = Version::new(20, 0, 0);
+    const MIN_NODE_VERSION: semver::Version = Version::new(20, 0, 0);
     async fn new(runtime: PathBuf, package_manager: PathBuf) -> Result<Box<dyn JSRuntimeTrait>> {
         let output = util::command::new_smol_command(&runtime)
             .arg("--version")
@@ -494,11 +496,11 @@ impl SystemJSRuntime {
         }
         let version_str = String::from_utf8_lossy(&output.stdout);
         let version = semver::Version::parse(version_str.trim().trim_start_matches('v'))?;
-        if version < Self::MIN_VERSION {
+        if version < Self::MIN_NODE_VERSION {
             anyhow::bail!(
                 "node at {} is too old. want: {}, got: {}",
                 runtime.to_string_lossy(),
-                Self::MIN_VERSION,
+                Self::MIN_NODE_VERSION,
                 version
             )
         }
