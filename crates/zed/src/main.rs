@@ -683,6 +683,9 @@ pub fn main() {
         cx.set_menus(menus);
         initialize_workspace(app_state.clone(), prompt_builder, cx);
 
+        #[cfg(target_os = "macos")]
+        zed::menu_bar_icon::initialize_menu_bar_icon(cx);
+
         cx.activate(true);
 
         cx.spawn({

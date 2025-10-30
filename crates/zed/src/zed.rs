@@ -3,12 +3,16 @@ pub mod component_preview;
 pub mod edit_prediction_registry;
 #[cfg(target_os = "macos")]
 pub(crate) mod mac_only_instance;
+#[cfg(target_os = "macos")]
+pub mod menu_bar_icon;
 mod migrate;
 mod open_listener;
 mod quick_action_bar;
 #[cfg(target_os = "windows")]
 pub(crate) mod windows_only_instance;
 
+#[cfg(target_os = "macos")]
+use agent_ui;
 use agent_ui::{AgentDiffToolbar, AgentPanelDelegate};
 use anyhow::Context as _;
 pub use app_menus::*;
@@ -89,6 +93,8 @@ use workspace::{
     CloseIntent, CloseWindow, NotificationFrame, RestoreBanner, with_active_or_new_workspace,
 };
 use workspace::{Pane, notifications::DetachAndPromptErr};
+#[cfg(target_os = "macos")]
+use zed_actions;
 use zed_actions::{
     OpenAccountSettings, OpenBrowser, OpenDocs, OpenServerSettings, OpenSettingsFile, OpenZedUrl,
     Quit,

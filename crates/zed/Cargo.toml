@@ -166,6 +166,11 @@ zeta2.workspace = true
 zlog.workspace = true
 zlog_settings.workspace = true
 
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa.workspace = true
+ctor.workspace = true
+objc.workspace = true
+
 [target.'cfg(target_os = "windows")'.dependencies]
 windows.workspace = true
 
